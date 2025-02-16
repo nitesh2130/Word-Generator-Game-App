@@ -1,13 +1,19 @@
 import { LoginDto } from './DTO/login.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { RegisterUserDto } from './DTO/register.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from './user.model';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateDto } from './DTO/update.dto';
 
 @Injectable()
 export class UsersService {
+  user: any;
   constructor(
     @InjectModel(User) private readonly UserModel: typeof User,
     private readonly jwtService: JwtService,
@@ -82,5 +88,21 @@ export class UsersService {
 
   //For the user update user dettails
 
-  async updateUser(updateDto: UpdateDto) {}
+  async updateUser(updateDto: UpdateDto, userId: number) {
+    const { name, password, email, phoneNumber } = updateDto;
+    const user = await this.UserModel.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('not found the user');
+    }
+
+    if (!name || !password || !email || !phoneNumber) {
+      throw new NotFoundException(
+        'Not have any data for the update in the user details',
+      );
+    }
+
+    const newUser = await this.user.update(updateDto);
+
+    return { newUser, message: 'User details is updated' };
+  }
 }

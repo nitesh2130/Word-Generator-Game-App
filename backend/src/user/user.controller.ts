@@ -1,5 +1,7 @@
 import { LoginDto } from './DTO/login.dto';
 import { RegisterUserDto } from './DTO/register.dto.js';
+import { UpdateDto } from './DTO/update.dto';
+import { JwtAuthGuard } from './jwt-auth.gaurd';
 import { UsersService } from './user.service';
 import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
 
@@ -17,5 +19,12 @@ export class UsersController {
   @Post('login')
   loginUser(@Body() loginDto: LoginDto) {
     return this.UsersService.loginUser(loginDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('update')
+  updateUser(@Body() updateDto: UpdateDto, @Req() req: any) {
+    const userId = req?.user?.userId;
+    return this.UsersService.updateUser(updateDto, userId);
   }
 }
